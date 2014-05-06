@@ -29,12 +29,12 @@ var output = $.fumanchu( '{{level1.level2.level3.data}}', {
   level1: {
     level2: {
 	  level3: {
-	    data: 'I am 4 levels deep!'
+	    data: 'I am 3 levels deep!'
 	  }
 	}
   }
 } );
-// output = 'I am 4 levels deep!'
+// output = 'I am 3 levels deep!'
 ```
 
 Fumanchu will accept a fallback object too which is used as a backup search.
