@@ -29,8 +29,6 @@
 
 			// regular object, check for template entry
 			if ( template.template ) {
-				$.fn.fumanchu.args = $.fn.fumanchu.fallback;
-				$.fn.fumanchu.fallback = $.fn.fumanchu.context;
 				$.fn.fumanchu.context = template;
 				template = template.template;
 
@@ -57,9 +55,12 @@
 			// array type
 			if ( $.type( val ) === 'array' ) {
 				$.each( val, function( i, item ) {
-					if ( ! item.template && tpl )
-						item.template = tpl;
-					out += t.fumanchu( item.template, item, $.fn.fumanchu.fallback, { list: val, index: i } );
+					if ( $.type( item ) === 'object' ) {
+						if ( ! item.template && tpl )
+							item.template = tpl;
+						$.fn.fumanchu.context = item;
+					}
+					out += t.fumanchu( item, $.fn.fumanchu.context, $.fn.fumanchu.fallback, { list: val, index: i } );
 				} );
 			// object type
 			} else if ( $.type( val ) === 'object' && val.template ) {
