@@ -52,9 +52,6 @@
 			if ( ! $.fumanchu.templates[ p1 ] && tpl )
 				$.fumanchu.templates[ p1 ] = tpl;
 
-			if (p1==='state.points' )
-				console.log( p1, val, $.type( val ) );
-
 			// array type
 			if ( $.type( val ) === 'array' ) {
 				$.each( val, function( i, item ) {
