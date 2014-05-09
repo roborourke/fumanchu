@@ -52,6 +52,9 @@
 			if ( ! $.fumanchu.templates[ p1 ] && tpl )
 				$.fumanchu.templates[ p1 ] = tpl;
 
+			if (p1==='state.points' )
+				console.log( p1, val, $.type( val ) );
+
 			// array type
 			if ( $.type( val ) === 'array' ) {
 				$.each( val, function( i, item ) {
@@ -68,12 +71,12 @@
 			// function type
 			} else if ( $.type( val ) === 'function' ) {
 				out = val.apply( t, [ $.fumanchu.context, $.fumanchu.fallback, args ] );
-			// boolean
-			} else if ( $.type( val ) === 'boolean' ) {
-				out = val ? '1' : '0';
 			// number
 			} else if ( $.type( val ) === 'number' ) {
 				out = $.fumanchu.numberformat( val, $.fumanchu.fallback );
+			// boolean
+			} else if ( $.type( val ) === 'boolean' ) {
+				out = val ? '1' : '0';
 			// string
 			} else if ( $.type( val ) === 'string' ) {
 				out = val;
@@ -86,13 +89,13 @@
 	// searches an object and returns any found path
 	$.fumanchu.getpath = function getpath( path, object, fallback ) {
 		path = path.split( '.' );
-		if ( path.length == 4 && object && object[ path[0] ] && object[ path[0] ][ path[1] ] && object[ path[0] ][ path[1] ][ path[2] ] && object[ path[0] ][ path[1] ][ path[2] ][ path[3] ] )
+		if ( path.length == 4 && object && object[ path[0] ] && object[ path[0] ][ path[1] ] && object[ path[0] ][ path[1] ][ path[2] ] && $.type( object[ path[0] ][ path[1] ][ path[2] ][ path[3] ] ) !== 'undefined' )
 			return object[ path[0] ][ path[1] ][ path[2] ][ path[3] ];
-		if ( path.length == 3 && object && object[ path[0] ] && object[ path[0] ][ path[1] ] && object[ path[0] ][ path[1] ][ path[2] ] )
+		if ( path.length == 3 && object && object[ path[0] ] && object[ path[0] ][ path[1] ] && $.type( object[ path[0] ][ path[1] ][ path[2] ] ) !== 'undefined' )
 			return object[ path[0] ][ path[1] ][ path[2] ];
-		if ( path.length == 2 && object && object[ path[0] ] && object[ path[0] ][ path[1] ] )
+		if ( path.length == 2 && object && object[ path[0] ] && $.type( object[ path[0] ][ path[1] ] ) !== 'undefined' )
 			return object[ path[0] ][ path[1] ];
-		if ( path.length == 1 && object && object[ path[0] ] )
+		if ( path.length == 1 && object && $.type( object[ path[0] ] ) !== 'undefined' )
 			return object[ path[0] ];
 		// if we get here try again from the fallback object
 		if ( fallback && object !== fallback ) {
@@ -107,7 +110,7 @@
 
 	// number handling function
 	$.fumanchu.numberformat = function( num, fallback ) {
-		return num;
+		return '' + num;
 	};
 
 	// prime template cache
