@@ -42,18 +42,21 @@
 		}
 
 		// replace any double bracketed strings or double underscored
-		return template.toString().replace( /(?:__|{{)([a-z0-9\.]+)(?:}}|__)/gi, function( match, p1, offset, s ) {
+		return template.toString().replace( /(__|{{)([a-z0-9\.]+)(}}|__)/gi, function( match, p1, p2, p3, offset, s ) {
 			// get object property
-			var val = $.fumanchu.getpath( p1, $.fumanchu.context, $.fumanchu.fallback ),
+			var val = $.fumanchu.getpath( p2, $.fumanchu.context, $.fumanchu.fallback ),
 				out = '',
-				tpl = $.fumanchu.templates[ p1 ] || $( '[data-template="' + p1 + '"]' ).html();
+				tpl = $.fumanchu.templates[ p2 ] || $( '[data-template="' + p2 + '"]' ).html();
 
 			// store template if found
-			if ( ! $.fumanchu.templates[ p1 ] && tpl )
-				$.fumanchu.templates[ p1 ] = tpl;
+			if ( ! $.fumanchu.templates[ p2 ] && tpl )
+				$.fumanchu.templates[ p2 ] = tpl;
 
-			// array type
-			if ( $.type( val ) === 'array' ) {
+			// object type w. template
+			if ( $.type( val ) === 'object' && val.template ) {
+				out = t.fumanchu( val.template, val, $.fumanchu.fallback, args );
+			// array|object type
+			} else if ( $.type( val ) === 'array' || $.type( val ) === 'object' ) {
 				$.each( val, function( i, item ) {
 					if ( $.type( item ) === 'object' ) {
 						if ( ! item.template && tpl )
@@ -62,9 +65,6 @@
 					}
 					out += t.fumanchu( item, $.fumanchu.context, $.fumanchu.fallback, { list: val, index: i } );
 				} );
-			// object type
-			} else if ( $.type( val ) === 'object' && val.template ) {
-				out = t.fumanchu( val.template, val, $.fumanchu.fallback, args );
 			// function type
 			} else if ( $.type( val ) === 'function' ) {
 				out = val.apply( t, [ $.fumanchu.context, $.fumanchu.fallback, args ] );
@@ -77,6 +77,11 @@
 			// string
 			} else if ( $.type( val ) === 'string' ) {
 				out = val;
+			}
+
+			// should we urlencode?
+			if ( p1 === '__' ) {
+				out = escape( out );
 			}
 
 			return t.fumanchu( out, $.fumanchu.context, $.fumanchu.fallback, $.fumanchu.args );
