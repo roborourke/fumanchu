@@ -17,6 +17,8 @@ the data used to replace special tags with.
 Template tags should be placed in double braces `{{key}}` *or* double underscores `__key__`,
 handy if you're generating URLs.
 
+Double underscored tags are escaped for URLs using `escape()`.
+
 ```js
 var output = $.fumanchu( '{{title}}', { title: 'Some title' } );
 // output = 'Some title'
