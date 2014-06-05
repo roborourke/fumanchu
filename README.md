@@ -90,7 +90,7 @@ Ideally you don't want to have to put the template in every time so you can add 
 templates based on the object key.
 
 ```js
-$.fn.fumanchu.templates.items = '<li>{{title}} by {{author}}</li>';
+$.fumanchu.templates.items = '<li>{{title}} by {{author}}</li>';
 ```
 
 ### Functions
