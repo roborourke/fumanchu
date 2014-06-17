@@ -11,6 +11,12 @@
 
 		var t = this;
 
+		// default delimiters
+		if ( ! $.fumanchu.regex ) {
+			$.fumanchu.register( '{{', '}}' );
+			$.fumanchu.register( '__', function( out ) { return escape( out ); } );
+		}
+
 		// set defaults
 		$.fumanchu.context = context || {};
 		$.fumanchu.fallback = fallback || context;
@@ -42,19 +48,24 @@
 		}
 
 		// replace any double bracketed strings or double underscored
-		return template.toString().replace( /(__|{{)([a-z0-9\.]+)(}}|__)/gi, function( match, p1, p2, p3, offset, s ) {
+		return template.toString().replace( $.fumanchu.regex, function( match, p1, p2, p3, p4, p5, offset, s ) {
 			// get object property
 			var val = $.fumanchu.getpath( p2, $.fumanchu.context, $.fumanchu.fallback ),
 				out = '',
-				tpl = $.fumanchu.templates[ p2 ] || $( '[data-template="' + p2 + '"]' ).html();
+				tpl = p5 || $.fumanchu.templates[ p2 ] || $( '[data-template="' + p2 + '"]' ).html();
 
 			// store template if found
 			if ( ! $.fumanchu.templates[ p2 ] && tpl )
 				$.fumanchu.templates[ p2 ] = tpl;
 
+			console.log( p1, p2, p3, p4, p5 );
+
 			// object type w. template
-			if ( $.type( val ) === 'object' && val.template ) {
-				out = t.fumanchu( val.template, val, $.fumanchu.fallback, args );
+			if ( $.type( val ) === 'object' && ( tpl || val.template ) ) {
+				// check p5 is anything, use as template
+				if ( val.template )
+					tpl = val.template;
+				out = t.fumanchu( tpl, val, $.fumanchu.fallback, args );
 			// array|object type
 			} else if ( $.type( val ) === 'array' || $.type( val ) === 'object' ) {
 				$.each( val, function( i, item ) {
@@ -79,10 +90,8 @@
 				out = val;
 			}
 
-			// should we urlencode?
-			if ( p1 === '__' ) {
-				out = escape( out );
-			}
+			// run delimeter process
+			out = $.fumanchu.delimiters[ p1 ].callback( out );
 
 			return t.fumanchu( out, $.fumanchu.context, $.fumanchu.fallback, $.fumanchu.args );
 		} );
@@ -105,6 +114,57 @@
 		}
 		// empty string if nothing found
 		return '';
+	};
+
+	// regex
+	$.fumanchu.regex = null;
+
+	// add delimiters
+	$.fumanchu.delimiters = {};
+
+	// register new delimiters
+	$.fumanchu.register = function() {
+		if ( ! arguments || ! arguments.length )
+			return;
+
+		open = arguments[0];
+		close = false;
+		callback = false;
+		if ( arguments.length === 3 ) {
+			close = arguments[1];
+			callback = arguments[2];
+		} else if ( arguments.length === 2 ) {
+			if ( $.type( arguments[1] ) === 'string' )
+				close = arguments[1];
+			if ( $.type( arguments[1] ) === 'function' )
+				callback = arguments[1];
+		}
+
+		if ( $.type( open ) !== 'string' )
+			return;
+
+		// use same delimiter for close as open if not supplied
+		if ( ! close )
+			close = open;
+
+		// add standard callback
+		if ( $.type( callback ) !== 'function' )
+			callback = function( out ) { return out; }
+
+		// store delimiter using opener as key
+		$.fumanchu.delimiters[ open ] = {
+			open: open,
+			close: close,
+			callback: callback
+		};
+
+		// rebuild regex
+		$.fumanchu.regex = new RegExp( '(' +
+			$.map( $.fumanchu.delimiters, function( d, key ) { return d.open; } ).join( '|' ) +
+			')([a-z0-9\.]+)(' +
+			$.map( $.fumanchu.delimiters, function( d, key ) { return d.close; } ).join( '|' ) +
+			')((.*?)(?:\\1)\/\\2(?:\\3))?', 'gim' );
+
 	};
 
 	// template cache
